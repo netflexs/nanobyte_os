@@ -1,0 +1,36 @@
+name: Build Nanobyte OS
+
+on:
+  workflow_dispatch: # Allows the workflow to be triggered manually
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo wget \
+                            nasm mtools python3 python3-pip python3-parted scons dosfstools libguestfs-tools qemu-system-x86
+
+    - name: Install Python requirements
+      run: python3 -m pip install -r requirements.txt
+
+    - name: Prepare toolchain directory
+      run: mkdir -p ../.toolchains
+
+    - name: Build toolchain
+      run: scons toolchain
+
+    - name: Build the OS
+      run: scons
+
+    - name: Upload built files
+      uses: actions/upload-artifact@v3
+      with:
+        name: nanobyte-os-build
+        path: build/
