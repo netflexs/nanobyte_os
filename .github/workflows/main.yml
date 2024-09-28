@@ -1,7 +1,7 @@
 name: Build Nanobyte OS
 
 on:
-  workflow_dispatch: # Allows the workflow to be triggered manually
+  workflow_dispatch:
 
 jobs:
   build:
@@ -26,10 +26,16 @@ jobs:
     - name: Build toolchain
       run: scons toolchain
 
-    - name: Build the OS
-      run: scons
+    - name: Run libguestfs-test-tool
+      run: libguestfs-test-tool
+
+    - name: Build the OS with libguestfs debugging
+      run: |
+        export LIBGUESTFS_DEBUG=1 LIBGUESTFS_TRACE=1
+        scons
 
     - name: Upload built files
+      if: success()
       uses: actions/upload-artifact@v3
       with:
         name: nanobyte-os-build
